@@ -5,6 +5,8 @@ import path from 'path';
 import { logger } from '../utils/logger.js';
 import { generateTurborepo } from './turborepo.js';
 import { generateSharedPackages } from './shared-packages.js';
+import { generateFrontendApps } from './frontend-app.js';
+import { generateBackendApps } from './backend-app.js';
 
 export async function scaffold(config: ProjectConfig) {
   const targetDir = path.resolve(process.cwd(), config.projectName);
@@ -30,6 +32,12 @@ export async function scaffold(config: ProjectConfig) {
 
     // 2. Shared config packages
     await generateSharedPackages(config, targetDir);
+
+    // 3. Frontend apps (Next.js)
+    await generateFrontendApps(config, targetDir);
+
+    // 4. Backend apps (Express)
+    await generateBackendApps(config, targetDir);
   } catch (error) {
     if (createdTargetDir) {
       await fs.remove(targetDir);

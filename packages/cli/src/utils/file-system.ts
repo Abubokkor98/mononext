@@ -33,6 +33,10 @@ export async function writeJson(destAbsolutePath: string, data: unknown) {
   await fs.outputJson(destAbsolutePath, data, { spaces: 2 });
 }
 
+export async function writeFile(destAbsolutePath: string, content: string) {
+  await fs.outputFile(destAbsolutePath, content);
+}
+
 export async function ensureDir(dirPath: string) {
   await fs.ensureDir(dirPath);
 }
