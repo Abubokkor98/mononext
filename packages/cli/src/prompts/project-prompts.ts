@@ -1,5 +1,6 @@
 import prompts from 'prompts';
 import pc from 'picocolors';
+import { PromptCancelledError } from '../utils/errors.js';
 
 export async function askProjectDetails() {
   const response = await prompts([
@@ -42,8 +43,7 @@ export async function askProjectDetails() {
     }
   ], {
     onCancel: () => {
-      console.log(pc.red('Operation cancelled.'));
-      process.exit(1);
+      throw new PromptCancelledError();
     }
   });
 

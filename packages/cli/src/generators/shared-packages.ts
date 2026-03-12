@@ -27,8 +27,12 @@ export async function generateSharedPackages(config: ProjectConfig, targetDir: s
       name: '@repo/eslint-config',
       version: '0.0.0',
       private: true,
+      type: 'module',
       license: 'MIT',
       dependencies: {
+        '@eslint/js': 'latest',
+        '@eslint/eslintrc': 'latest',
+        'typescript-eslint': 'latest',
         'eslint-config-next': '^15.0.0',
         'eslint-config-prettier': '^9.1.0',
         'eslint-plugin-react': '^7.37.0'

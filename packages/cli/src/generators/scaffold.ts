@@ -1,5 +1,6 @@
 import { ProjectConfig } from '../types/config.js';
 import { ensureDir } from '../utils/file-system.js';
+import fs from 'fs-extra';
 import path from 'path';
 import { logger } from '../utils/logger.js';
 import { generateTurborepo } from './turborepo.js';
@@ -7,6 +8,16 @@ import { generateSharedPackages } from './shared-packages.js';
 
 export async function scaffold(config: ProjectConfig) {
   const targetDir = path.resolve(process.cwd(), config.projectName);
+
+  // Fail fast if the target directory already exists and is non-empty
+  if (fs.existsSync(targetDir)) {
+    const entries = fs.readdirSync(targetDir);
+    if (entries.length > 0) {
+      throw new Error(
+        `Directory "${config.projectName}" already exists and is not empty. Choose a different project name or remove the directory.`
+      );
+    }
+  }
 
   logger.info(`\nScaffolding project in ${targetDir}...`);
 

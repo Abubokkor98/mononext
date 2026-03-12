@@ -13,10 +13,7 @@ program
   .description('Initialize a new monorepo project')
   .option('-y, --yes', 'Skip prompts and use default options', false)
   .action((options) => {
-    init(options).catch((err) => {
-      console.error(err);
-      process.exit(1);
-    });
+    init(options);
   });
 
 program.parse(process.argv);

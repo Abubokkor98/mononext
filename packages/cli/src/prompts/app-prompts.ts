@@ -1,6 +1,6 @@
 import prompts from 'prompts';
-import pc from 'picocolors';
 import { AppConfig } from '../types/config.js';
+import { PromptCancelledError } from '../utils/errors.js';
 
 export async function askAppDetails(): Promise<AppConfig[]> {
   const { count } = await prompts({
@@ -12,8 +12,7 @@ export async function askAppDetails(): Promise<AppConfig[]> {
     max: 5,
   }, {
     onCancel: () => {
-      console.log(pc.red('Operation cancelled.'));
-      process.exit(1);
+      throw new PromptCancelledError();
     }
   });
 
@@ -28,10 +27,15 @@ export async function askAppDetails(): Promise<AppConfig[]> {
         name: 'name',
         message: `App ${i} — Name:`,
         initial: defaultName,
-        validate: (value: string) => 
-          /^[a-z0-9-]+$/.test(value) 
-            ? true 
-            : 'App name must be lowercase alphanumeric and hyphens'
+        validate: (value: string) => {
+          if (!/^[a-z0-9-]+$/.test(value)) {
+            return 'App name must be lowercase alphanumeric and hyphens';
+          }
+          if (apps.some((app) => app.name === value)) {
+            return 'App name must be unique';
+          }
+          return true;
+        }
       },
       {
         type: 'select',
@@ -44,8 +48,7 @@ export async function askAppDetails(): Promise<AppConfig[]> {
       }
     ], {
       onCancel: () => {
-        console.log(pc.red('Operation cancelled.'));
-        process.exit(1);
+        throw new PromptCancelledError();
       }
     });
 

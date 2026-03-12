@@ -1,6 +1,6 @@
 import prompts from 'prompts';
-import pc from 'picocolors';
 import { ProjectConfig } from '../types/config.js';
+import { PromptCancelledError } from '../utils/errors.js';
 
 type AnimationSelections = ProjectConfig['animations'];
 type FeatureSelections = ProjectConfig['features'];
@@ -31,8 +31,7 @@ export async function askExtras(): Promise<{ animations: AnimationSelections; fe
     }
   ], {
     onCancel: () => {
-      console.log(pc.red('Operation cancelled.'));
-      process.exit(1);
+      throw new PromptCancelledError();
     }
   });
 

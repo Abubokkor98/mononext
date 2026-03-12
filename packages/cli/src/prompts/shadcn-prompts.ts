@@ -1,8 +1,16 @@
 import prompts from 'prompts';
-import pc from 'picocolors';
-import { ShadcnConfig } from '../types/config.js';
+import { AppConfig, ShadcnConfig } from '../types/config.js';
+import { PromptCancelledError } from '../utils/errors.js';
 
-export async function askShadcnDetails(): Promise<ShadcnConfig> {
+const SHADCN_DISABLED: ShadcnConfig = { enabled: false, base: 'radix', preset: 'nova' };
+
+export async function askShadcnDetails(apps: AppConfig[]): Promise<ShadcnConfig> {
+  const hasFrontendApps = apps.some((app) => app.type === 'frontend');
+
+  if (!hasFrontendApps) {
+    return SHADCN_DISABLED;
+  }
+
   const { enabled } = await prompts({
     type: 'confirm',
     name: 'enabled',
@@ -10,13 +18,12 @@ export async function askShadcnDetails(): Promise<ShadcnConfig> {
     initial: true
   }, {
     onCancel: () => {
-      console.log(pc.red('Operation cancelled.'));
-      process.exit(1);
+      throw new PromptCancelledError();
     }
   });
 
   if (!enabled) {
-    return { enabled: false, base: 'radix', preset: 'nova' }; // Base and preset ignored if disabled
+    return SHADCN_DISABLED;
   }
 
   const response = await prompts([
@@ -43,8 +50,7 @@ export async function askShadcnDetails(): Promise<ShadcnConfig> {
     }
   ], {
     onCancel: () => {
-      console.log(pc.red('Operation cancelled.'));
-      process.exit(1);
+      throw new PromptCancelledError();
     }
   });
 
