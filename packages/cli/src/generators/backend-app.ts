@@ -5,9 +5,23 @@ import { LATEST_DEPS } from '../constants/versions.js';
 
 const DEFAULT_PORT_START = 4000;
 
-function buildServerEntry(app: AppConfig, port: number): string {
+function buildHealthRoute(appName: string): string {
+  return `import { Router } from 'express';
+
+const router = Router();
+
+router.get('/', (_req, res) => {
+  res.json({ status: 'ok', service: '${appName}' });
+});
+
+export default router;
+`;
+}
+
+function buildServerEntry(appName: string, port: number): string {
   return `import express from 'express';
 import cors from 'cors';
+import healthRouter from './routes/health.js';
 
 const app = express();
 const PORT = process.env.PORT || ${port};
@@ -15,12 +29,10 @@ const PORT = process.env.PORT || ${port};
 app.use(cors());
 app.use(express.json());
 
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', service: '${app.name}' });
-});
+app.use('/health', healthRouter);
 
 app.listen(PORT, () => {
-  console.log(\`[${app.name}] Server running on http://localhost:\${PORT}\`);
+  console.log(\`[${appName}] Server running on http://localhost:\${PORT}\`);
 });
 `;
 }
@@ -78,9 +90,10 @@ export async function generateBackendApps(config: ProjectConfig, targetDir: stri
     const app = backendApps[index];
     const appDir = path.join(targetDir, 'apps', app.name);
     const srcDir = path.join(appDir, 'src');
+    const routesDir = path.join(srcDir, 'routes');
     const port = DEFAULT_PORT_START + index;
 
-    await ensureDir(srcDir);
+    await ensureDir(routesDir);
 
     // package.json
     await writeJson(path.join(appDir, 'package.json'), buildPackageJson(app, config));
@@ -89,6 +102,9 @@ export async function generateBackendApps(config: ProjectConfig, targetDir: stri
     await writeJson(path.join(appDir, 'tsconfig.json'), buildTsconfig());
 
     // src/index.ts
-    await writeFile(path.join(srcDir, 'index.ts'), buildServerEntry(app, port));
+    await writeFile(path.join(srcDir, 'index.ts'), buildServerEntry(app.name, port));
+
+    // src/routes/health.ts
+    await writeFile(path.join(routesDir, 'health.ts'), buildHealthRoute(app.name));
   }
 }
