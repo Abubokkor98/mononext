@@ -93,6 +93,8 @@ function buildPackageJson(app: AppConfig, config: ProjectConfig): object {
   if (config.codeQuality === 'eslint-prettier') {
     devDependencies['@repo/eslint-config'] = 'workspace:*';
     devDependencies.eslint = LATEST_DEPS.eslint;
+  } else if (config.codeQuality === 'biome') {
+    devDependencies['@biomejs/biome'] = LATEST_DEPS['@biomejs/biome'];
   }
 
   return {
@@ -121,8 +123,11 @@ export async function generateFrontendApps(config: ProjectConfig, targetDir: str
 
     await ensureDir(appSourceDir);
 
-    // Capitalize app name for display
-    const displayName = app.name.charAt(0).toUpperCase() + app.name.slice(1);
+    // Title-case app name for display (e.g., "my-app" → "My App")
+    const displayName = app.name
+      .split('-')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
 
     // package.json
     await writeJson(path.join(appDir, 'package.json'), buildPackageJson(app, config));

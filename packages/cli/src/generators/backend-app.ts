@@ -49,6 +49,8 @@ function buildPackageJson(app: AppConfig, config: ProjectConfig): object {
   if (config.codeQuality === 'eslint-prettier') {
     devDependencies['@repo/eslint-config'] = 'workspace:*';
     devDependencies.eslint = LATEST_DEPS.eslint;
+  } else if (config.codeQuality === 'biome') {
+    devDependencies['@biomejs/biome'] = LATEST_DEPS['@biomejs/biome'];
   }
 
   return {
