@@ -8,6 +8,7 @@ import { generateSharedPackages } from './shared-packages.js';
 
 export async function scaffold(config: ProjectConfig) {
   const targetDir = path.resolve(process.cwd(), config.projectName);
+  const createdTargetDir = !fs.existsSync(targetDir);
 
   // Fail fast if the target directory already exists and is non-empty
   if (fs.existsSync(targetDir)) {
@@ -23,11 +24,18 @@ export async function scaffold(config: ProjectConfig) {
 
   await ensureDir(targetDir);
 
-  // 1. Turborepo root
-  await generateTurborepo(config, targetDir);
+  try {
+    // 1. Turborepo root
+    await generateTurborepo(config, targetDir);
 
-  // 2. Shared config packages
-  await generateSharedPackages(config, targetDir);
+    // 2. Shared config packages
+    await generateSharedPackages(config, targetDir);
+  } catch (error) {
+    if (createdTargetDir) {
+      await fs.remove(targetDir);
+    }
+    throw error;
+  }
 
   logger.success('\nProject generated successfully!');
 }
