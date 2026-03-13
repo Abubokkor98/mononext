@@ -8,6 +8,7 @@ import { generateSharedPackages } from './shared-packages.js';
 import { generateFrontendApps } from './frontend-app.js';
 import { generateBackendApps } from './backend-app.js';
 import { generateShadcnSetup } from './shadcn-setup.js';
+import { generateAnimations } from './animations.js';
 
 export async function scaffold(config: ProjectConfig) {
   const targetDir = path.resolve(process.cwd(), config.projectName);
@@ -42,6 +43,9 @@ export async function scaffold(config: ProjectConfig) {
 
     // 5. shadcn/ui setup (if enabled)
     await generateShadcnSetup(config, targetDir);
+
+    // 6. Animation libraries (if selected)
+    await generateAnimations(config, targetDir);
   } catch (error) {
     if (createdTargetDir) {
       await fs.remove(targetDir);

@@ -29,6 +29,7 @@ function buildUiPackageJson(): object {
     type: 'module',
     exports: {
       '.': './src/index.ts',
+      './src/*': './src/*',
       './lib/*': './lib/*',
     },
     dependencies: {
