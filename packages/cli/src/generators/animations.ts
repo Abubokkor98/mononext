@@ -142,15 +142,19 @@ async function modifyLayout(
 
   // Wrap {children} with SmoothScrollProvider
   if (options.hasLenis) {
-    const bodyPattern = /<body className=\{inter\.className\}>\s*\{children\}\s*<\/body>/m;
-    const updated = content.replace(
-      bodyPattern,
-      '<body className={inter.className}><SmoothScrollProvider>{children}</SmoothScrollProvider></body>',
-    );
-    if (updated === content) {
-      throw new Error(`Unable to inject SmoothScrollProvider in ${layoutPath}`);
+    const alreadyWrapped = content.includes('<SmoothScrollProvider>{children}</SmoothScrollProvider>');
+
+    if (!alreadyWrapped) {
+      const bodyPattern = /<body className=\{inter\.className\}>\s*\{children\}\s*<\/body>/m;
+      const updated = content.replace(
+        bodyPattern,
+        '<body className={inter.className}><SmoothScrollProvider>{children}</SmoothScrollProvider></body>',
+      );
+      if (updated === content) {
+        throw new Error(`Unable to inject SmoothScrollProvider in ${layoutPath}`);
+      }
+      content = updated;
     }
-    content = updated;
   }
 
   await fs.writeFile(layoutPath, content);
