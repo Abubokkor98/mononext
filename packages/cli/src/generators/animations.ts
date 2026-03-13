@@ -187,6 +187,37 @@ async function addAnimationDeps(packageJsonPath: string, config: ProjectConfig) 
   }
 }
 
+async function updateBarrelExports(config: ProjectConfig, uiSrcDir: string) {
+  const indexPath = path.join(uiSrcDir, 'index.ts');
+
+  if (!(await fs.pathExists(indexPath))) {
+    return;
+  }
+
+  let indexContent = await fs.readFile(indexPath, 'utf-8');
+  const exports: string[] = [];
+
+  if (config.animations.includes('framer-motion')) {
+    const exportLine = "export { MotionWrapper } from './motion-wrapper';";
+    if (!indexContent.includes(exportLine)) exports.push(exportLine);
+  }
+
+  if (config.animations.includes('lenis')) {
+    const exportLine = "export { SmoothScrollProvider } from './smooth-scroll-provider';";
+    if (!indexContent.includes(exportLine)) exports.push(exportLine);
+  }
+
+  if (config.animations.includes('gsap')) {
+    const exportLine = "export { gsap, ScrollTrigger } from './gsap-register';";
+    if (!indexContent.includes(exportLine)) exports.push(exportLine);
+  }
+
+  if (exports.length > 0) {
+    indexContent += '\n' + exports.join('\n') + '\n';
+    await fs.writeFile(indexPath, indexContent);
+  }
+}
+
 export async function generateAnimations(config: ProjectConfig, targetDir: string) {
   if (config.animations.length === 0) {
     return;
@@ -204,6 +235,9 @@ export async function generateAnimations(config: ProjectConfig, targetDir: strin
   // 1. Write shared components to packages/ui/src/
   await writeSharedComponents(config, uiSrcDir);
 
-  // 2. Wire into each frontend app (template.tsx, layout.tsx mods, deps)
+  // 2. Update index.ts with exports
+  await updateBarrelExports(config, uiSrcDir);
+
+  // 3. Wire into each frontend app (template.tsx, layout.tsx mods, deps)
   await wireFrontendApps(config, targetDir);
 }
