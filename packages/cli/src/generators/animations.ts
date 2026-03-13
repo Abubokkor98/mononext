@@ -122,13 +122,15 @@ async function modifyLayout(
 
   let content = await fs.readFile(layoutPath, 'utf-8');
 
-  // Add imports at the top (after existing imports)
+  // Add imports at the top (after existing imports), skip if already present
   const imports: string[] = [];
   if (options.hasGsap) {
-    imports.push("import '@repo/ui/src/gsap-register';");
+    const gsapImport = "import '@repo/ui/src/gsap-register';";
+    if (!content.includes(gsapImport)) imports.push(gsapImport);
   }
   if (options.hasLenis) {
-    imports.push("import { SmoothScrollProvider } from '@repo/ui/src/smooth-scroll-provider';");
+    const lenisImport = "import { SmoothScrollProvider } from '@repo/ui/src/smooth-scroll-provider';";
+    if (!content.includes(lenisImport)) imports.push(lenisImport);
   }
 
   if (imports.length > 0) {
@@ -140,10 +142,15 @@ async function modifyLayout(
 
   // Wrap {children} with SmoothScrollProvider
   if (options.hasLenis) {
-    content = content.replace(
-      '<body className={inter.className}>{children}</body>',
+    const bodyPattern = /<body className=\{inter\.className\}>\s*\{children\}\s*<\/body>/m;
+    const updated = content.replace(
+      bodyPattern,
       '<body className={inter.className}><SmoothScrollProvider>{children}</SmoothScrollProvider></body>',
     );
+    if (updated === content) {
+      throw new Error(`Unable to inject SmoothScrollProvider in ${layoutPath}`);
+    }
+    content = updated;
   }
 
   await fs.writeFile(layoutPath, content);
@@ -156,6 +163,11 @@ async function addAnimationDeps(packageJsonPath: string, config: ProjectConfig) 
 
   const pkg = await fs.readJson(packageJsonPath);
   const deps: Record<string, string> = {};
+
+  // Ensure @repo/ui is a dependency — animation components live there
+  if (config.animations.length > 0) {
+    deps['@repo/ui'] = 'workspace:*';
+  }
 
   if (config.animations.includes('framer-motion')) {
     deps['framer-motion'] = LATEST_DEPS['framer-motion'];
