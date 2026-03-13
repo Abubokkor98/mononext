@@ -7,7 +7,7 @@ export const DEFAULT_CONFIG: ProjectConfig = {
   codeQuality: 'eslint-prettier',
   apps: [
     { name: 'web', type: 'frontend' },
-    { name: 'api', type: 'backend' }
+    { name: 'api', type: 'backend' },
   ],
   shadcn: {
     enabled: true,

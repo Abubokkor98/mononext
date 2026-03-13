@@ -16,7 +16,7 @@ export const LATEST_DEPS = {
   'react-dom': 'latest',
   typescript: 'latest',
   tailwindcss: 'latest',
-  eslint: 'latest',
+  eslint: '^9', // Pinned: eslint-config-next supports up to v9; revisit when v10 compatibility lands
   prettier: 'latest',
   '@biomejs/biome': 'latest',
   'framer-motion': 'latest',

@@ -1,5 +1,6 @@
 import { ProjectConfig } from '../types/config.js';
 import { copyTemplate, ensureDir, writeJson } from '../utils/file-system.js';
+import { LATEST_DEPS } from '../constants/versions.js';
 import path from 'path';
 
 export async function generateSharedPackages(config: ProjectConfig, targetDir: string) {
@@ -30,13 +31,14 @@ export async function generateSharedPackages(config: ProjectConfig, targetDir: s
       type: 'module',
       license: 'MIT',
       dependencies: {
-        '@eslint/js': 'latest',
-        '@eslint/eslintrc': 'latest',
-        'typescript-eslint': 'latest',
-        'eslint-config-next': '^15.0.0',
-        'eslint-config-prettier': '^9.1.0',
-        'eslint-plugin-react': '^7.37.0'
-      }
+        eslint: LATEST_DEPS.eslint,
+        '@eslint/js': '^9',
+        '@eslint/eslintrc': '^3',
+        'typescript-eslint': '^8',
+        'eslint-config-next': '^15',
+        'eslint-config-prettier': '^9',
+        'eslint-plugin-react': '^7',
+      },
     });
     await copyTemplate('packages/config-eslint/next.js', path.join(eslintDir, 'next.js'));
     await copyTemplate('packages/config-eslint/express.js', path.join(eslintDir, 'express.js'));
