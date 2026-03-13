@@ -69,14 +69,18 @@ export async function generateExtras(config: ProjectConfig, targetDir: string) {
   // 2. Try running husky init programmatically
   const huskySucceeded = await runHuskyInit(targetDir);
 
+  const preCommitPath = path.join(targetDir, '.husky', 'pre-commit');
+
   if (huskySucceeded) {
     // 3. Overwrite the default pre-commit hook with lint-staged
-    const preCommitPath = path.join(targetDir, '.husky', 'pre-commit');
     await writeFile(preCommitPath, PRE_COMMIT_HOOK);
   } else {
     // Fallback: create .husky directory and pre-commit hook manually
     const huskyDir = path.join(targetDir, '.husky');
     await fs.ensureDir(huskyDir);
-    await writeFile(path.join(huskyDir, 'pre-commit'), PRE_COMMIT_HOOK);
+    await writeFile(preCommitPath, PRE_COMMIT_HOOK);
   }
+
+  // Git requires hooks to be executable
+  await fs.chmod(preCommitPath, 0o755);
 }

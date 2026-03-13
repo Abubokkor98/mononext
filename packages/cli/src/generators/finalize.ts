@@ -15,9 +15,8 @@ out/
 build/
 
 # Environment
-.env
-.env.local
-.env.*.local
+.env*
+!.env.example
 
 # IDE
 .vscode/
@@ -176,7 +175,7 @@ async function initGitRepo(targetDir: string): Promise<boolean> {
   }
 }
 
-export async function generateFinalize(config: ProjectConfig, targetDir: string) {
+export async function generateFinalize(config: ProjectConfig, targetDir: string): Promise<boolean> {
   // 1. Write .gitignore
   await writeFile(path.join(targetDir, '.gitignore'), GITIGNORE);
 
@@ -184,5 +183,5 @@ export async function generateFinalize(config: ProjectConfig, targetDir: string)
   await writeFile(path.join(targetDir, 'README.md'), buildReadme(config));
 
   // 3. Initialize git repo with initial commit
-  await initGitRepo(targetDir);
+  return await initGitRepo(targetDir);
 }
