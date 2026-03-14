@@ -1,4 +1,5 @@
 import { ProjectConfig } from '../types/config.js';
+import { logger } from '../utils/logger.js';
 import { writeFile } from '../utils/file-system.js';
 import { LATEST_DEPS } from '../constants/versions.js';
 import path from 'path';
@@ -66,7 +67,13 @@ export async function generatePlaywright(config: ProjectConfig, targetDir: strin
   }
 
   const frontendApps = config.apps.filter((app) => app.type === 'frontend');
-  const firstFrontendAppName = frontendApps[0]?.name ?? 'web';
+
+  if (frontendApps.length === 0) {
+    logger.warn('Playwright enabled but no frontend apps found; skipping Playwright setup.');
+    return;
+  }
+
+  const firstFrontendAppName = frontendApps[0].name;
 
   // 1. Write playwright.config.ts
   await writeFile(
