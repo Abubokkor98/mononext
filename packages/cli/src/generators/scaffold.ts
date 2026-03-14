@@ -10,6 +10,8 @@ import { generateBackendApps } from './backend-app.js';
 import { generateShadcnSetup } from './shadcn-setup.js';
 import { generateAnimations } from './animations.js';
 import { generateExtras } from './extras.js';
+import { generatePlaywright } from './playwright.js';
+import { generateGitHubActions } from './ci.js';
 import { generateFinalize } from './finalize.js';
 
 export async function scaffold(config: ProjectConfig) {
@@ -52,7 +54,13 @@ export async function scaffold(config: ProjectConfig) {
     // 7. Husky + lint-staged (if selected)
     await generateExtras(config, targetDir);
 
-    // 8. Git init + .gitignore + README
+    // 8. Playwright e2e testing (if selected)
+    await generatePlaywright(config, targetDir);
+
+    // 9. GitHub Actions CI (if selected)
+    await generateGitHubActions(config, targetDir);
+
+    // 10. Git init + .gitignore + README
     await generateFinalize(config, targetDir);
   } catch (error) {
     if (createdTargetDir) {
