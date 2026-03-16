@@ -8,9 +8,20 @@ import { scaffold } from '../generators/scaffold.js';
 import { handleError } from '../utils/handle-error.js';
 import { PromptCancelledError } from '../utils/errors.js';
 import { logger } from '../utils/logger.js';
+import { saveAllPreferences, clearPreferences } from '../utils/preferences.js';
 
-export async function init(options: { yes: boolean }) {
+interface InitOptions {
+  yes: boolean;
+  resetPreferences: boolean;
+}
+
+export async function init(options: InitOptions) {
   try {
+    if (options.resetPreferences) {
+      clearPreferences();
+      logger.info('Preferences cleared.');
+    }
+
     let config: ProjectConfig;
 
     if (options.yes) {
@@ -31,6 +42,16 @@ export async function init(options: { yes: boolean }) {
     }
 
     await scaffold(projectConfigSchema.parse(config));
+
+    // Save preferences only after successful scaffold
+    if (!options.yes) {
+      saveAllPreferences({
+        codeQuality: config.codeQuality,
+        shadcn: config.shadcn,
+        animations: config.animations,
+        features: config.features,
+      });
+    }
   } catch (err) {
     if (err instanceof PromptCancelledError) {
       logger.warn('\nOperation cancelled.');

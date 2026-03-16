@@ -12,6 +12,7 @@ program
   .command('init')
   .description('Initialize a new monorepo project')
   .option('-y, --yes', 'Skip prompts and use default options', false)
+  .option('--reset-preferences', 'Clear saved preferences and use defaults', false)
   .action((options) => {
     init(options);
   });

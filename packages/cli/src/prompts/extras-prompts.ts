@@ -1,11 +1,17 @@
 import prompts from 'prompts';
 import { ProjectConfig } from '../types/config.js';
 import { PromptCancelledError } from '../utils/errors.js';
+import { getPreference } from '../utils/preferences.js';
 
 type AnimationSelections = ProjectConfig['animations'];
 type FeatureSelections = ProjectConfig['features'];
 
 export async function askExtras(): Promise<{ animations: AnimationSelections; features: FeatureSelections }> {
+  const savedAnimations = getPreference('animations') ?? [];
+  const savedHusky = getPreference('featureHusky') ?? false;
+  const savedPlaywright = getPreference('featurePlaywright') ?? false;
+  const savedGithubActions = getPreference('featureGithubActions') ?? false;
+
   const response = await prompts([
     {
       type: 'multiselect',
@@ -13,9 +19,9 @@ export async function askExtras(): Promise<{ animations: AnimationSelections; fe
       message: 'Animation libraries (press Space to select, Enter to skip):',
       instructions: false,
       choices: [
-        { title: 'Framer Motion', value: 'framer-motion' },
-        { title: 'Lenis (smooth scroll)', value: 'lenis' },
-        { title: 'GSAP', value: 'gsap' }
+        { title: 'Framer Motion', value: 'framer-motion', selected: savedAnimations.includes('framer-motion') },
+        { title: 'Lenis (smooth scroll)', value: 'lenis', selected: savedAnimations.includes('lenis') },
+        { title: 'GSAP', value: 'gsap', selected: savedAnimations.includes('gsap') }
       ]
     },
     {
@@ -24,9 +30,9 @@ export async function askExtras(): Promise<{ animations: AnimationSelections; fe
       message: 'Extra features (press Space to select, Enter to skip):',
       instructions: false,
       choices: [
-        { title: 'Husky + lint-staged (git hooks)', value: 'husky' },
-        { title: 'Playwright (e2e testing)', value: 'playwright' },
-        { title: 'GitHub Actions CI', value: 'githubActions' }
+        { title: 'Husky + lint-staged (git hooks)', value: 'husky', selected: savedHusky },
+        { title: 'Playwright (e2e testing)', value: 'playwright', selected: savedPlaywright },
+        { title: 'GitHub Actions CI', value: 'githubActions', selected: savedGithubActions }
       ]
     }
   ], {
@@ -46,3 +52,4 @@ export async function askExtras(): Promise<{ animations: AnimationSelections; fe
     }
   };
 }
+

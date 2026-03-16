@@ -1,8 +1,20 @@
 import prompts from 'prompts';
 import pc from 'picocolors';
 import { PromptCancelledError } from '../utils/errors.js';
+import { getPreference } from '../utils/preferences.js';
+
+const CODE_QUALITY_CHOICES = [
+  { title: 'ESLint + Prettier', value: 'eslint-prettier' },
+  { title: 'Biome (faster alternative)', value: 'biome' },
+];
 
 export async function askProjectDetails() {
+  const savedCodeQuality = getPreference('codeQuality');
+  const codeQualityInitial = Math.max(
+    0,
+    CODE_QUALITY_CHOICES.findIndex((c) => c.value === savedCodeQuality),
+  );
+
   const response = await prompts([
     {
       type: 'text',
@@ -36,10 +48,8 @@ export async function askProjectDetails() {
       type: 'select',
       name: 'codeQuality',
       message: 'Code quality tooling?',
-      choices: [
-        { title: 'ESLint + Prettier', value: 'eslint-prettier' },
-        { title: 'Biome (faster alternative)', value: 'biome' }
-      ]
+      choices: CODE_QUALITY_CHOICES,
+      initial: codeQualityInitial,
     }
   ], {
     onCancel: () => {
