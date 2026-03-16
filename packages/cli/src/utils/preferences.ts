@@ -64,14 +64,16 @@ type PreferencesInput = Pick<ProjectConfig, 'codeQuality' | 'shadcn' | 'animatio
  */
 export function saveAllPreferences(config: PreferencesInput): void {
   try {
-    preferences.set('codeQuality', config.codeQuality);
-    preferences.set('shadcnEnabled', config.shadcn.enabled);
-    preferences.set('shadcnBase', config.shadcn.base);
-    preferences.set('shadcnPreset', config.shadcn.preset);
-    preferences.set('animations', config.animations);
-    preferences.set('featureHusky', config.features.husky);
-    preferences.set('featurePlaywright', config.features.playwright);
-    preferences.set('featureGithubActions', config.features.githubActions);
+    preferences.set({
+      codeQuality: config.codeQuality,
+      shadcnEnabled: config.shadcn.enabled,
+      shadcnBase: config.shadcn.base,
+      shadcnPreset: config.shadcn.preset,
+      animations: config.animations,
+      featureHusky: config.features.husky,
+      featurePlaywright: config.features.playwright,
+      featureGithubActions: config.features.githubActions,
+    });
   } catch {
     logger.warn('Could not save preferences. Your choices will not be remembered next time.');
   }
