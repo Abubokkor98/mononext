@@ -6,11 +6,11 @@ import { execa } from "execa";
 import fs from "fs-extra";
 
 const PRESET_MAP: Record<string, string> = {
-  nova: "nova",
-  vega: "vega",
-  maia: "maia",
-  lyra: "lyra",
-  mira: "mira",
+  nova: 'nova',
+  vega: 'vega',
+  maia: 'maia',
+  lyra: 'lyra',
+  mira: 'mira',
 };
 
 const CN_UTILS = `import { type ClassValue, clsx } from 'clsx';
@@ -396,7 +396,7 @@ export async function generateShadcnSetup(
         "@repo/ui": "workspace:*",
       };
 
-      await fs.writeJson(appPkgPath, pkg, { spaces: 2 });
+      await writeJson(appPkgPath, pkg);
     }
   }
 }
