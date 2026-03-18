@@ -154,7 +154,7 @@ async function moveFilesToUiPackage(firstFrontendAppDir: string, uiDir: string) 
 
     // Clean up empty lib dir in the app
     const libDir = path.join(firstFrontendAppDir, 'lib');
-    const remaining = await fs.readdir(libDir);
+    const remaining = await fs.readdir(libDir).catch(() => [] as string[]);
     if (remaining.length === 0) {
       await fs.remove(libDir);
     }
@@ -214,6 +214,7 @@ export async function generateShadcnSetup(config: ProjectConfig, targetDir: stri
   // 1. Create packages/ui structure with separate folders
   await ensureDir(path.join(uiDir, 'src', 'components'));
   await ensureDir(path.join(uiDir, 'src', 'blocks'));
+  await ensureDir(path.join(uiDir, 'src', 'providers'));
   await ensureDir(path.join(uiDir, 'src', 'styles'));
   await ensureDir(path.join(uiDir, 'hooks'));
   await ensureDir(path.join(uiDir, 'lib'));
@@ -221,6 +222,7 @@ export async function generateShadcnSetup(config: ProjectConfig, targetDir: stri
   await writeJson(path.join(uiDir, 'package.json'), buildUiPackageJson());
   await writeJson(path.join(uiDir, 'tsconfig.json'), buildUiTsconfig());
   await writeFile(path.join(uiDir, 'src', 'index.ts'), '// Export your UI components here\n');
+  await writeFile(path.join(uiDir, 'src', 'styles', 'globals.css'), '/* Global styles */\n');
 
   // 2. Try running shadcn init programmatically
   const shadcnSucceeded = await runShadcnInit(firstFrontendAppDir, config);

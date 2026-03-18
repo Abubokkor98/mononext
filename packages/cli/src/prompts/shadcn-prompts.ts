@@ -69,7 +69,7 @@ export async function askShadcnDetails(apps: AppConfig[]): Promise<ShadcnConfig>
     }
   });
 
-  const savedCustomPresetCode = getPreference('shadcnCustomPresetCode') as string | undefined;
+  const savedCustomPresetCode = getPreference('shadcnCustomPresetCode');
 
   // Ask for custom preset code if selected
   let customPresetCode: string | undefined;

@@ -150,6 +150,7 @@ ${config.apps.map((app, i) => `│   ${i === config.apps.length - 1 ? '└' : '�
 │   ├── ui/
 │   │   ├── src/components/   ← Shared primitives (button, card)
 │   │   ├── src/blocks/       ← Shared blocks (login, dashboard)
+│   │   ├── src/providers/    ← Shared providers (motion, scroll)
 │   │   └── lib/utils.ts
 │   ├── config-typescript/    ← Shared TypeScript config
 │   └── config-${config.codeQuality === 'biome' ? 'biome' : 'eslint'}/        ← Shared ${config.codeQuality === 'biome' ? 'Biome' : 'ESLint'} config
