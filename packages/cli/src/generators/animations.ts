@@ -157,7 +157,10 @@ async function modifyLayout(
         '<body className={inter.className}><SmoothScrollProvider>{children}</SmoothScrollProvider></body>',
       );
       if (updated === content) {
-        throw new Error(`Unable to inject SmoothScrollProvider in ${layoutPath}`);
+        throw new Error(
+          `Unable to inject SmoothScrollProvider in ${layoutPath}. ` +
+          `Expected pattern: <body className={inter.className}>{children}</body>`,
+        );
       }
       content = updated;
     }
@@ -264,6 +267,7 @@ export async function generateAnimations(config: ProjectConfig, targetDir: strin
   const providersDir = path.join(targetDir, 'packages', 'ui', 'src', 'providers');
   const libDir = path.join(targetDir, 'packages', 'ui', 'lib');
   await ensureDir(providersDir);
+  await ensureDir(libDir);
 
   // 1. Write providers to packages/ui/src/providers/
   await writeProviders(config, providersDir);
@@ -276,6 +280,13 @@ export async function generateAnimations(config: ProjectConfig, targetDir: strin
 
   // 4. Re-export from main src/index.ts so `@repo/ui` imports work
   const mainIndexPath = path.join(targetDir, 'packages', 'ui', 'src', 'index.ts');
+
+  // Create index.ts if shadcn setup was skipped (shadcn disabled but animations enabled)
+  if (!(await fs.pathExists(mainIndexPath))) {
+    await ensureDir(path.dirname(mainIndexPath));
+    await fs.writeFile(mainIndexPath, '// Export your UI components here\n');
+  }
+
   const mainIndexContent = await fs.readFile(mainIndexPath, 'utf-8');
   const reExportLine = "export * from './providers/index.js';";
   if (!mainIndexContent.includes(reExportLine)) {

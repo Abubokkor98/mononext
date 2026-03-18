@@ -1,6 +1,6 @@
 import { AppConfig, ProjectConfig } from '../types/config.js';
 import { ensureDir, writeJson, writeFile } from '../utils/file-system.js';
-import { spinner } from '../utils/logger.js';
+import { logger, spinner } from '../utils/logger.js';
 import path from 'path';
 import { execa } from 'execa';
 import fs from 'fs-extra';
@@ -63,9 +63,15 @@ async function runShadcnInit(
   firstFrontendAppDir: string,
   config: ProjectConfig,
 ): Promise<boolean> {
-  const preset = config.shadcn.preset === 'custom'
-    ? config.shadcn.customPresetCode ?? 'nova'
-    : PRESET_MAP[config.shadcn.preset] ?? 'nova';
+  let preset: string;
+  if (config.shadcn.preset === 'custom') {
+    if (!config.shadcn.customPresetCode) {
+      logger.warn('Custom preset selected but no code provided; falling back to "nova".');
+    }
+    preset = config.shadcn.customPresetCode ?? 'nova';
+  } else {
+    preset = PRESET_MAP[config.shadcn.preset] ?? 'nova';
+  }
 
   const loadingSpinner = spinner('Running shadcn init...');
 
