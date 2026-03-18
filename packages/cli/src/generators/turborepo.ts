@@ -18,6 +18,7 @@ export async function generateTurborepo(config: ProjectConfig, targetDir: string
       build: 'turbo build',
       dev: 'turbo dev',
       lint: 'turbo lint',
+      'ui:add': 'pnpm dlx shadcn@latest add -c packages/ui',
       format: config.codeQuality === 'biome'
         ? 'biome format --write .'
         : 'prettier --write "**/*.{ts,tsx,md}"',

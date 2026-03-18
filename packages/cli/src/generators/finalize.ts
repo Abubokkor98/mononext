@@ -58,15 +58,31 @@ function buildReadme(config: ProjectConfig): string {
     shadcnSection = `
 ## Adding UI Components
 
-This project uses [shadcn/ui](https://ui.shadcn.com) with shared components in \`packages/ui\`.
+Run from the project root — no need to \`cd\`:
 
 \`\`\`bash
-# Add a component (run from packages/ui/)
-cd packages/ui
-npx shadcn@latest add button
+# Add a component (button, input, card, etc.)
+pnpm ui:add button
+
+# Add a block (login page, dashboard, etc.)
+pnpm ui:add login-01
 \`\`\`
 
-All frontend apps import shared components from \`@repo/ui\`.
+Components go to \`packages/ui/src/components/\`.
+Blocks go to \`packages/ui/src/blocks/\`.
+
+### Importing
+
+\`\`\`tsx
+// Import a component
+import { Button } from '@repo/ui/src/components/button';
+
+// Import a block
+import { LoginForm } from '@repo/ui/src/blocks/login-form';
+
+// Import a utility
+import { cn } from '@repo/ui/lib/utils';
+\`\`\`
 `;
   }
 
@@ -134,6 +150,7 @@ ${devFilterExamples}
 | \`pnpm build\` | Build all apps |
 | \`pnpm lint\` | Lint all apps |
 | \`pnpm dev --filter=<app>\` | Start a specific app |
+| \`pnpm ui:add <component>\` | Add a shadcn component or block |
 
 ## Project Structure
 
@@ -142,7 +159,11 @@ ${config.projectName}/
 ├── apps/
 ${config.apps.map((app, i) => `│   ${i === config.apps.length - 1 ? '└' : '├'}── ${app.name}/`).join('\n')}
 ├── packages/
-│   ├── ui/                   ← Shared UI components
+│   ├── ui/
+│   │   ├── src/components/   ← Shared primitives (button, card)
+│   │   ├── src/blocks/       ← Shared blocks (login, dashboard)
+│   │   ├── src/providers/    ← Shared providers (motion, scroll)
+│   │   └── lib/utils.ts
 │   ├── config-typescript/    ← Shared TypeScript config
 │   └── config-${config.codeQuality === 'biome' ? 'biome' : 'eslint'}/        ← Shared ${config.codeQuality === 'biome' ? 'Biome' : 'ESLint'} config
 ├── turbo.json

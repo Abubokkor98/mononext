@@ -7,6 +7,7 @@ interface SavedPreferences {
   shadcnEnabled: boolean;
   shadcnBase: string;
   shadcnPreset: string;
+  shadcnCustomPresetCode: string;
   animations: string[];
   featureHusky: boolean;
   featurePlaywright: boolean;
@@ -18,6 +19,7 @@ const PREFERENCES_SCHEMA = {
   shadcnEnabled: { type: 'boolean' },
   shadcnBase: { type: 'string' },
   shadcnPreset: { type: 'string' },
+  shadcnCustomPresetCode: { type: 'string' },
   animations: { type: 'array', items: { type: 'string' } },
   featureHusky: { type: 'boolean' },
   featurePlaywright: { type: 'boolean' },
@@ -29,6 +31,7 @@ const PREFERENCES_DEFAULTS: SavedPreferences = {
   shadcnEnabled: true,
   shadcnBase: 'radix',
   shadcnPreset: 'nova',
+  shadcnCustomPresetCode: '',
   animations: [],
   featureHusky: false,
   featurePlaywright: false,
@@ -69,6 +72,7 @@ export function saveAllPreferences(config: PreferencesInput): void {
       shadcnEnabled: config.shadcn.enabled,
       shadcnBase: config.shadcn.base,
       shadcnPreset: config.shadcn.preset,
+      shadcnCustomPresetCode: config.shadcn.customPresetCode ?? '',
       animations: config.animations,
       featureHusky: config.features.husky,
       featurePlaywright: config.features.playwright,

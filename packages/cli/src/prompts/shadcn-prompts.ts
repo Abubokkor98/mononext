@@ -16,6 +16,7 @@ const PRESET_CHOICES = [
   { title: 'Maia (Hugeicons / Figtree)', value: 'maia' },
   { title: 'Lyra (Phosphor / JetBrains Mono)', value: 'lyra' },
   { title: 'Mira (Hugeicons / Inter)', value: 'mira' },
+  { title: 'Custom (from ui.shadcn.com/create)', value: 'custom' },
 ];
 
 export async function askShadcnDetails(apps: AppConfig[]): Promise<ShadcnConfig> {
@@ -68,10 +69,31 @@ export async function askShadcnDetails(apps: AppConfig[]): Promise<ShadcnConfig>
     }
   });
 
+  const savedCustomPresetCode = getPreference('shadcnCustomPresetCode');
+
+  // Ask for custom preset code if selected
+  let customPresetCode: string | undefined;
+  if (response.preset === 'custom') {
+    const { code } = await prompts({
+      type: 'text',
+      name: 'code',
+      message: 'Enter your shadcn preset code (from ui.shadcn.com/create):',
+      initial: savedCustomPresetCode ?? '',
+      validate: (value: string) =>
+        value.trim().length > 0 ? true : 'Preset code cannot be empty',
+    }, {
+      onCancel: () => {
+        throw new PromptCancelledError();
+      }
+    });
+    customPresetCode = code;
+  }
+
   return {
     enabled: true,
     base: response.base,
     preset: response.preset,
+    customPresetCode,
   };
 }
 

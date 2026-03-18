@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import { LATEST_DEPS } from '../constants/versions.js';
 
-// --- Shared component templates (packages/ui/src/) ---
+// --- Provider templates (packages/ui/src/providers/) ---
 
 const MOTION_WRAPPER = `'use client';
 
@@ -51,6 +51,8 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
 }
 `;
 
+// --- Utility template (packages/ui/lib/) ---
+
 const GSAP_REGISTER = `'use client';
 
 import { gsap } from 'gsap';
@@ -73,17 +75,19 @@ export default function Template({ children }: { children: React.ReactNode }) {
 
 // --- Generator ---
 
-async function writeSharedComponents(config: ProjectConfig, uiSrcDir: string) {
+async function writeProviders(config: ProjectConfig, providersDir: string) {
   if (config.animations.includes('framer-motion')) {
-    await writeFile(path.join(uiSrcDir, 'motion-wrapper.tsx'), MOTION_WRAPPER);
+    await writeFile(path.join(providersDir, 'motion-wrapper.tsx'), MOTION_WRAPPER);
   }
 
   if (config.animations.includes('lenis')) {
-    await writeFile(path.join(uiSrcDir, 'smooth-scroll-provider.tsx'), SMOOTH_SCROLL_PROVIDER);
+    await writeFile(path.join(providersDir, 'smooth-scroll-provider.tsx'), SMOOTH_SCROLL_PROVIDER);
   }
+}
 
+async function writeGsapRegister(config: ProjectConfig, libDir: string) {
   if (config.animations.includes('gsap')) {
-    await writeFile(path.join(uiSrcDir, 'gsap-register.ts'), GSAP_REGISTER);
+    await writeFile(path.join(libDir, 'gsap-register.ts'), GSAP_REGISTER);
   }
 }
 
@@ -125,7 +129,7 @@ async function modifyLayout(
   // Add imports at the top (after existing imports), skip if already present
   const imports: string[] = [];
   if (options.hasGsap) {
-    const gsapImport = "import '@repo/ui/src/gsap-register';";
+    const gsapImport = "import '@repo/ui/lib/gsap-register';";
     if (!content.includes(gsapImport)) imports.push(gsapImport);
   }
   if (options.hasLenis) {
@@ -153,7 +157,10 @@ async function modifyLayout(
         '<body className={inter.className}><SmoothScrollProvider>{children}</SmoothScrollProvider></body>',
       );
       if (updated === content) {
-        throw new Error(`Unable to inject SmoothScrollProvider in ${layoutPath}`);
+        throw new Error(
+          `Unable to inject SmoothScrollProvider in ${layoutPath}. ` +
+          `Expected pattern: <body className={inter.className}>{children}</body>`,
+        );
       }
       content = updated;
     }
@@ -193,11 +200,38 @@ async function addAnimationDeps(packageJsonPath: string, config: ProjectConfig) 
   }
 }
 
-async function updateBarrelExports(config: ProjectConfig, uiSrcDir: string) {
-  const indexPath = path.join(uiSrcDir, 'index.ts');
-
-  if (!(await fs.pathExists(indexPath))) {
+async function addUiPeerDeps(uiPackageJsonPath: string, config: ProjectConfig) {
+  if (!(await fs.pathExists(uiPackageJsonPath))) {
     return;
+  }
+
+  const pkg = await fs.readJson(uiPackageJsonPath);
+  const peerDeps: Record<string, string> = {};
+
+  if (config.animations.includes('framer-motion')) {
+    peerDeps['framer-motion'] = '>=10';
+  }
+
+  if (config.animations.includes('lenis')) {
+    peerDeps.lenis = '>=1';
+  }
+
+  if (config.animations.includes('gsap')) {
+    peerDeps.gsap = '>=3';
+  }
+
+  if (Object.keys(peerDeps).length > 0) {
+    pkg.peerDependencies = { ...pkg.peerDependencies, ...peerDeps };
+    await fs.writeJson(uiPackageJsonPath, pkg, { spaces: 2 });
+  }
+}
+
+async function updateProviderBarrelExports(config: ProjectConfig, providersDir: string) {
+  const indexPath = path.join(providersDir, 'index.ts');
+
+  // Create index.ts if it doesn't exist
+  if (!(await fs.pathExists(indexPath))) {
+    await fs.writeFile(indexPath, '');
   }
 
   let indexContent = await fs.readFile(indexPath, 'utf-8');
@@ -210,11 +244,6 @@ async function updateBarrelExports(config: ProjectConfig, uiSrcDir: string) {
 
   if (config.animations.includes('lenis')) {
     const exportLine = "export { SmoothScrollProvider } from './smooth-scroll-provider';";
-    if (!indexContent.includes(exportLine)) exports.push(exportLine);
-  }
-
-  if (config.animations.includes('gsap')) {
-    const exportLine = "export { gsap, ScrollTrigger } from './gsap-register';";
     if (!indexContent.includes(exportLine)) exports.push(exportLine);
   }
 
@@ -235,15 +264,38 @@ export async function generateAnimations(config: ProjectConfig, targetDir: strin
     return;
   }
 
-  const uiSrcDir = path.join(targetDir, 'packages', 'ui', 'src');
-  await ensureDir(uiSrcDir);
+  const providersDir = path.join(targetDir, 'packages', 'ui', 'src', 'providers');
+  const libDir = path.join(targetDir, 'packages', 'ui', 'lib');
+  await ensureDir(providersDir);
+  await ensureDir(libDir);
 
-  // 1. Write shared components to packages/ui/src/
-  await writeSharedComponents(config, uiSrcDir);
+  // 1. Write providers to packages/ui/src/providers/
+  await writeProviders(config, providersDir);
 
-  // 2. Update index.ts with exports
-  await updateBarrelExports(config, uiSrcDir);
+  // 2. Write GSAP register to packages/ui/lib/
+  await writeGsapRegister(config, libDir);
 
-  // 3. Wire into each frontend app (template.tsx, layout.tsx mods, deps)
+  // 3. Update providers/index.ts with exports
+  await updateProviderBarrelExports(config, providersDir);
+
+  // 4. Re-export from main src/index.ts so `@repo/ui` imports work
+  const mainIndexPath = path.join(targetDir, 'packages', 'ui', 'src', 'index.ts');
+
+  // Create index.ts if shadcn setup was skipped (shadcn disabled but animations enabled)
+  if (!(await fs.pathExists(mainIndexPath))) {
+    await ensureDir(path.dirname(mainIndexPath));
+    await fs.writeFile(mainIndexPath, '// Export your UI components here\n');
+  }
+
+  const mainIndexContent = await fs.readFile(mainIndexPath, 'utf-8');
+  const reExportLine = "export * from './providers/index.js';";
+  if (!mainIndexContent.includes(reExportLine)) {
+    await fs.writeFile(mainIndexPath, mainIndexContent.trimEnd() + '\n' + reExportLine + '\n');
+  }
+
+  // 5. Declare animation libs as peerDependencies on @repo/ui
+  await addUiPeerDeps(path.join(targetDir, 'packages', 'ui', 'package.json'), config);
+
+  // 6. Wire into each frontend app (template.tsx, layout.tsx mods, deps)
   await wireFrontendApps(config, targetDir);
 }

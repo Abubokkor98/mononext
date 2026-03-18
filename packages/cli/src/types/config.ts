@@ -8,7 +8,8 @@ export const appConfigSchema = z.object({
 export const shadcnConfigSchema = z.object({
   enabled: z.boolean(),
   base: z.enum(['radix', 'base']),
-  preset: z.enum(['nova', 'vega', 'maia', 'lyra', 'mira']),
+  preset: z.enum(['nova', 'vega', 'maia', 'lyra', 'mira', 'custom']),
+  customPresetCode: z.string().optional(),
 });
 
 export const projectConfigSchema = z.object({

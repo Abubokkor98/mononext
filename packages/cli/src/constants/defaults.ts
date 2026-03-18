@@ -13,6 +13,7 @@ export const DEFAULT_CONFIG: ProjectConfig = {
     enabled: true,
     base: 'radix',
     preset: 'nova',
+    customPresetCode: undefined,
   },
   animations: [],
   features: {
