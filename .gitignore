@@ -31,3 +31,7 @@ npm-debug.log*
 pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# AI Agent
+.agents/
+skills-lock.json
