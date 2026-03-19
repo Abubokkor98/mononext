@@ -39,4 +39,4 @@ skills-lock.json
 # Next.js
 .next
 out
-*env.d.ts
+**/next-env.d.ts

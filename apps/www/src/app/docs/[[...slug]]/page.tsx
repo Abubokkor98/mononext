@@ -12,10 +12,15 @@ interface DocsPageProps {
   params: Promise<{ slug?: string[] }>;
 }
 
-export default async function Page(props: DocsPageProps) {
-  const params = await props.params;
-  const page = source.getPage(params.slug);
+async function resolveDocPage(paramsPromise: DocsPageProps['params']) {
+  const { slug } = await paramsPromise;
+  const page = source.getPage(slug);
   if (!page) notFound();
+  return page;
+}
+
+export default async function Page(props: DocsPageProps) {
+  const page = await resolveDocPage(props.params);
 
   const MDX = page.data.body;
 
@@ -35,9 +40,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata(props: DocsPageProps) {
-  const params = await props.params;
-  const page = source.getPage(params.slug);
-  if (!page) notFound();
+  const page = await resolveDocPage(props.params);
 
   return {
     title: page.data.title,
