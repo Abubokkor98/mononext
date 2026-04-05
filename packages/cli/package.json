@@ -1,6 +1,6 @@
 {
   "name": "monoframe",
-  "version": "0.0.1-beta.2",
+  "version": "0.0.1-beta.3",
   "description": "Scaffold production-ready monorepos",
   "type": "module",
   "bin": {
